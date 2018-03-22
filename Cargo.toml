@@ -1,0 +1,7 @@
+[package]
+name = "cavestory"
+version = "0.1.0"
+authors = ["Douwe Gelling <douwe.gelling@intel.com>"]
+
+[dependencies]
+sdl2 = "0.31.0"
