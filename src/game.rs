@@ -1,15 +1,17 @@
 use constants;
 use graphics::Graphics;
+use input::Input;
+use entities::Entities;
+
 use sdl2;
-use sprite::{Drawable, Updatable, AnimatedSprite};
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use std::time::{Duration, Instant};
 use units::Milliseconds;
-
 
 pub struct Game {
     context: sdl2::Sdl,
     event_pump: sdl2::EventPump,
-    sprite: AnimatedSprite,
 }
 
 impl Game {
@@ -22,24 +24,16 @@ impl Game {
         Ok(Game {
             context: context,
             event_pump: event_pump,
-            sprite: AnimatedSprite::new("content/MyChar.bmp", 0, 0, constants::TILE_SIZE, constants::TILE_SIZE, 10, 3),
         })
     }
 
-    fn update(&mut self, elapsed_time: Milliseconds) {
-        self.sprite.update(elapsed_time);
-    }
-
-    fn draw(&self, graphics: &mut Graphics) {
-        graphics.clear();
-        self.sprite.draw(graphics, 320, 240);
-        graphics.present();
-    }
-
-
     pub fn event_loop(&mut self) {
-        match Graphics::new(&self.context) {
-            Ok(mut graphics) => {
+        match Graphics::load_canvas(&self.context) {
+            Ok(mut canvas) => {
+                let mut texture_creator = canvas.texture_creator();
+                let mut graphics = Graphics::new(&mut canvas, &mut texture_creator);
+
+                let mut entities = Entities::new(&mut graphics);
 
                 // target duration for one frame
                 // A bit lower than actually needed to provide some wriggle room for thread::sleep
@@ -48,31 +42,48 @@ impl Game {
                 let mut running = true;
                 let mut start_time = ::std::time::Instant::now();
                 let mut last_update_time = start_time;
+                let mut input = Input::new();
+
                 while running {
+                    input.begin_new_frame();
 
                     // handle input
                     for event in self.event_pump.poll_iter() {
-                        use sdl2::event::Event;
                         match event {
-                            Event::Quit {..} => { running = false; }
-                            Event::KeyDown { keycode: Some(code), .. } => {
-                                if code == sdl2::keyboard::Keycode::Escape {
-                                    running = false;
-                                }
+                            Event::Quit { .. } => {
+                                running = false;
+                            }
+                            Event::KeyDown {
+                                keycode: Some(code),
+                                ..
+                            } => {
+                                input.on_key_down(code);
+                            }
+                            Event::KeyUp {
+                                keycode: Some(code),
+                                ..
+                            } => {
+                                input.on_key_up(code);
                             }
                             _ => (),
                         }
                     }
 
+                    if input.key_pressed(Keycode::Escape) {
+                        running = false;
+                    }
+
+                    entities.process_input(&input);
+
                     // handle timer callbacks
 
                     // update. move player, projectiles, check collisions
                     let current_time = Instant::now();
-                    self.update(Milliseconds::from_duration(current_time - last_update_time));
+                    entities.update(Milliseconds::from_duration(current_time - last_update_time));
                     last_update_time = current_time;
 
                     // draw EVERYTHING
-                    self.draw(&mut graphics);
+                    entities.draw(&mut graphics);
 
                     let frame_end = sync_duration(start_time, target_duration);
 
@@ -84,7 +95,6 @@ impl Game {
                 println!("Could not initialize graphics: {}", error);
             }
         }
-
     }
 }
 
@@ -103,7 +113,10 @@ fn sync_duration(frame_start: Instant, target_duration: Duration) -> Instant {
             current_time = Instant::now();
         }
     } else {
-        println!("overshot frame target. Duration: {:?}", elapsed_time - target_duration);
+        println!(
+            "overshot frame target. Duration: {:?}",
+            elapsed_time - target_duration
+        );
     }
     current_time
 }

@@ -6,7 +6,9 @@ use game::Game;
 mod graphics;
 mod sprite;
 mod units;
-
+mod input;
+mod player;
+mod entities;
 
 fn main() {
     match Game::new() {

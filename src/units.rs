@@ -16,6 +16,10 @@ impl Milliseconds {
     pub fn to_duration(self) -> Duration {
         Duration::from_millis(self.0 as u64)
     }
+
+    pub fn value(self) -> u32 {
+        self.0
+    }
 }
 
 impl Add for Milliseconds {
@@ -49,4 +53,3 @@ impl SubAssign for Milliseconds {
         self.0 -= other.0;
     }
 }
-
