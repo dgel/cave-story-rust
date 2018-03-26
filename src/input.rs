@@ -1,5 +1,5 @@
-use std::collections::BTreeMap;
 use sdl2::keyboard::Keycode;
+use std::collections::BTreeMap;
 
 struct KeyState {
     held: bool,

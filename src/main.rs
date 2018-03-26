@@ -3,12 +3,12 @@ extern crate sdl2;
 mod constants;
 mod game;
 use game::Game;
+mod entities;
 mod graphics;
-mod sprite;
-mod units;
 mod input;
 mod player;
-mod entities;
+mod sprite;
+mod units;
 
 fn main() {
     match Game::new() {

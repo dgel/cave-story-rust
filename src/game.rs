@@ -1,7 +1,7 @@
 use constants;
+use entities::Entities;
 use graphics::Graphics;
 use input::Input;
-use entities::Entities;
 
 use sdl2;
 use sdl2::event::Event;

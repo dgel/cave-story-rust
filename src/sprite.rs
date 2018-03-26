@@ -1,8 +1,8 @@
+use constants;
+use graphics::Graphics;
 use sdl2::rect::Rect;
 use sdl2::render::Texture;
-use graphics::Graphics;
 use units::Milliseconds;
-use constants;
 
 use std::rc::Rc;
 
@@ -27,7 +27,14 @@ pub struct Sprite<'a> {
 }
 
 impl<'a> Sprite<'a> {
-    pub fn new(graphics: &mut Graphics<'a>, filename: &str, x: i32, y: i32, width: u32, height: u32) -> Sprite<'a> {
+    pub fn new(
+        graphics: &mut Graphics<'a>,
+        filename: &str,
+        x: i32,
+        y: i32,
+        width: u32,
+        height: u32,
+    ) -> Sprite<'a> {
         Sprite {
             sprite_sheet: graphics.load_image(filename),
             source_rect: Rect::new(x, y, width, height),
